@@ -16,5 +16,13 @@ export default class BookConcept {
         const _id = await this.book.createOne( {title, author} );
         return { msg: "New Book created!", book: await this.book.readOne({ _id })};
     }
+
+    async addGroup(title: String, g: ObjectId) {
+        return new Error("Not Implemented Yet");
+    }
+
+    async removeGroup(title: String, g: ObjectId) {
+        return new Error("Not Implemented Yet");
+    }
     // add in more working functions later
 }

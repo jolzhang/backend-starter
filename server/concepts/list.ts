@@ -14,5 +14,9 @@ export default class ListConcept {
         const _id = await this.list.createOne( {name, admin} );
         return { msg: "New List created!", list: await this.list.readOne({ _id })};
     }
+    
+    async addIn(name: String, admin: ObjectId, l: ObjectId) {
+        return new Error("Not Implemented Yet");
+    }
     // add in more working functions later
 }

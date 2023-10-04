@@ -168,6 +168,7 @@ class Routes {
     return await Group.changeAdmin(_id, user, newUser);
   }
 
+  // Comment Concept
   @Router.post("/comment")
   async createComment(session: WebSessionDoc, body: string, group: ObjectId) {
     const user = WebSession.getUser(session);
@@ -184,6 +185,49 @@ class Routes {
   async replyComment(session: WebSessionDoc, body: string, parent: ObjectId, group: ObjectId) {
     const user = WebSession.getUser(session);
     return await Comment.reply(user, body, parent, group);
+  }
+
+  // Search Concept
+  @Router.post("/search")
+  async createSearch(session: WebSessionDoc, book: ObjectId) {
+    return new Error("Not Implemented Yet");
+  }
+
+  @Router.patch("/search")
+  async recommend(session: WebSessionDoc, list: Set<ObjectId>) {
+    return new Error("Not Implemented Yet");
+  }
+
+  // List Concept
+  @Router.post("/list")
+  async createList(session: WebSessionDoc, name: String) {
+    return new Error("Not Implemented Yet");
+  }
+
+  @Router.patch("/list")
+  async addList(session: WebSessionDoc, name: String, b: ObjectId) {
+    return new Error("Not Implemented Yet");
+  }
+
+  @Router.delete("/list")
+  async removeList(session: WebSessionDoc, b: ObjectId) {
+    return new Error("Not Implemented Yet");
+  }
+
+  // Book Concept
+  @Router.post("/book")
+  async newBook(session: WebSessionDoc, title: String, author: ObjectId) {
+    return new Error("Not Implemented Yet");
+  }
+
+  @Router.patch("/book")
+  async addGroup(session: WebSessionDoc, title: String, g: ObjectId) {
+    return new Error("Not Implemented Yet");
+  }
+
+  @Router.patch("/book")
+  async removeGroup(session: WebSessionDoc, g: ObjectId) {
+    return new Error("Not Implemented Yet");
   }
 }
 
