@@ -77,6 +77,42 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Create Group",
+    endpoint: "/api/group/",
+    method: "POST",
+    fields: { content: "input" },
+  },
+  {
+    name: "Delete Group",
+    endpoint: "/api/group/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
+  {
+    name: "Update Group",
+    endpoint: "/api/group/:id",
+    method: "POST",
+    fields: { id: "input", update: { admin: "input" }},
+  },
+  {
+    name: "Create Comment",
+    endpoint: "/api/comment/",
+    method: "POST",
+    fields: { content: "input"},
+  },
+  {
+    name: "Remove Comment",
+    endpoint: "/api/comment/:id",
+    method: "DELETE",
+    fields: { id: "input"},
+  },
+  {
+    name: "Create Nested Comment",
+    endpoint: "/api/comment/",
+    method: "POST",
+    fields: { content: "input"},
+  },
 ];
 
 // Do not edit below here.

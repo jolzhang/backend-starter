@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Friend, Post, User, WebSession } from "./app";
+import { Comment, Friend, Group, Post, User, WebSession } from "./app";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -135,6 +135,55 @@ class Routes {
     const user = WebSession.getUser(session);
     const fromId = (await User.getUserByUsername(from))._id;
     return await Friend.rejectRequest(fromId, user);
+  }
+
+  // Group Concept
+  @Router.post("/group")
+  async newGroup(session: WebSessionDoc, name: string, members: Set<ObjectId>) {
+    const user = WebSession.getUser(session);
+    return await Group.newGroup(user, name, members);
+  }
+
+  @Router.patch("/group/:_id")
+  async updateGroup(session: WebSessionDoc, _id: ObjectId, u: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Group.joinGroup(_id, user);
+  }
+
+  @Router.patch("/group/:_id")
+  async removeUser(session: WebSessionDoc, _id: ObjectId, admin: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Group.removeUser(_id, user, admin);
+  }
+
+  @Router.delete("/group/:_id")
+  async deleteGroup(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Group.removeGroup(_id, user);
+  }
+
+  @Router.patch("/group/:_id")
+  async updateAdmin(session: WebSessionDoc, _id: ObjectId, newUser: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Group.changeAdmin(_id, user, newUser);
+  }
+
+  @Router.post("/comment")
+  async createComment(session: WebSessionDoc, body: string, group: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Comment.create(user, body, group);
+  }
+
+  @Router.delete("/comment/:_id")
+  async deleteComment(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Comment.remove(_id);
+  }
+
+  @Router.post("/comment")
+  async replyComment(session: WebSessionDoc, body: string, parent: ObjectId, group: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Comment.reply(user, body, parent, group);
   }
 }
 
