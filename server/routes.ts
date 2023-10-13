@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Comment, Friend, Group, Post, User, WebSession } from "./app";
+import { Comment, Friend, Post, User, WebSession } from "./app";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -26,9 +26,9 @@ class Routes {
   }
 
   @Router.post("/users")
-  async createUser(session: WebSessionDoc, username: string, password: string) {
+  async createUser(session: WebSessionDoc, username: string, password: string, email: string) {
     WebSession.isLoggedOut(session);
-    return await User.create(username, password);
+    return await User.create(username, password, email);
   }
 
   @Router.patch("/users")
@@ -41,6 +41,7 @@ class Routes {
   async deleteUser(session: WebSessionDoc) {
     const user = WebSession.getUser(session);
     WebSession.end(session);
+    // const groups = await Group.getAllGroups();
     return await User.delete(user);
   }
 
@@ -137,37 +138,68 @@ class Routes {
     return await Friend.rejectRequest(fromId, user);
   }
 
-  // Group Concept
-  @Router.post("/group")
-  async newGroup(session: WebSessionDoc, name: string, members: Set<ObjectId>) {
-    const user = WebSession.getUser(session);
-    return await Group.newGroup(user, name, members);
-  }
 
-  @Router.patch("/group/:_id")
-  async updateGroup(session: WebSessionDoc, _id: ObjectId, u: ObjectId) {
-    const user = WebSession.getUser(session);
-    return await Group.joinGroup(_id, user);
-  }
+  // Creating a new group
+  // @Router.post("/group")
+  // async newGroup(session: WebSessionDoc, groupname: string) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.newGroup(user, groupname);
+  // }
 
-  @Router.patch("/group/:_id")
-  async removeUser(session: WebSessionDoc, _id: ObjectId, admin: ObjectId) {
-    const user = WebSession.getUser(session);
-    return await Group.removeUser(_id, user, admin);
-  }
+  // @Router.patch("/group/:_id")
+  // async joinGroup(session: WebSessionDoc, _id: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.joinGroup(_id, user);
+  // }
 
-  @Router.delete("/group/:_id")
-  async deleteGroup(session: WebSessionDoc, _id: ObjectId) {
-    const user = WebSession.getUser(session);
-    return await Group.removeGroup(_id, user);
-  }
+  // @Router.patch("group/:groupid")
+  // async removeSelf(session: WebSessionDoc, groupid: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.removeSelf(groupid, user);
+  // }
+  
+  // @Router.patch("group/removeuser/:id")
+  // async removeUser(session: WebSessionDoc, id: ObjectId, admin: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.removeOtherUser(id, user, admin);
+  // }
 
-  @Router.patch("/group/:_id")
-  async updateAdmin(session: WebSessionDoc, _id: ObjectId, newUser: ObjectId) {
-    const user = WebSession.getUser(session);
-    return await Group.changeAdmin(_id, user, newUser);
-  }
+  // @Router.delete("/group/:_id")
+  // async deleteGroup(session: WebSessionDoc, _id: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.removeGroup(_id, user);
+  // }
 
+  // @Router.patch("/group/admin/:_id/user/:_newUser")
+  // async updateAdmin(session: WebSessionDoc, _id: ObjectId, newUser: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.changeAdmin(_id, user, newUser);
+  // }
+
+  // @Router.patch("group/admin/:_id/name/:_newname")
+  // async updateName(session: WebSessionDoc, _id: ObjectId, newname: string) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.changeName(_id, user, newname);
+  // }
+
+  // @Router.get("/groups")
+  // async getAllGroups( ){
+  //   return await Group.getAllGroups();
+  // }
+
+  // @Router.get("/group")
+  // async getUserGroups(session: WebSessionDoc) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.getUserGroups(user);
+  // }
+
+  // @Router.get("/groupadmin")
+  // async getUserAdminGroups(session: WebSessionDoc) {
+  //   const user = WebSession.getUser(session);
+  //   return await Group.getUserAdminGroups(user);
+  // }
+
+  
   // Comment Concept
   @Router.post("/comment")
   async createComment(session: WebSessionDoc, body: string, group: ObjectId) {
@@ -200,12 +232,12 @@ class Routes {
 
   // List Concept
   @Router.post("/list")
-  async createList(session: WebSessionDoc, name: String) {
+  async createList(session: WebSessionDoc, name: string) {
     return new Error("Not Implemented Yet");
   }
 
   @Router.patch("/list")
-  async addList(session: WebSessionDoc, name: String, b: ObjectId) {
+  async addList(session: WebSessionDoc, name: string, b: ObjectId) {
     return new Error("Not Implemented Yet");
   }
 
@@ -216,7 +248,7 @@ class Routes {
 
   // Book Concept
   @Router.post("/book")
-  async newBook(session: WebSessionDoc, title: String, author: ObjectId) {
+  async newBook(session: WebSessionDoc, title: string, author: ObjectId) {
     return new Error("Not Implemented Yet");
   }
 

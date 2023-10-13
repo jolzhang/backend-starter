@@ -18,5 +18,11 @@ export default class ListConcept {
     async addIn(name: String, admin: ObjectId, l: ObjectId) {
         return new Error("Not Implemented Yet");
     }
+
+    async removeFrom(name: String, admin: ObjectId, l: ObjectId) {
+        return new Error("Not Implemented Yet");
+    }
+
+
     // add in more working functions later
 }

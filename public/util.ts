@@ -21,7 +21,7 @@ const operations: operation[] = [
     name: "Create User",
     endpoint: "/api/users",
     method: "POST",
-    fields: { username: "input", password: "input" },
+    fields: { username: "input", password: "input", email: "input" },
   },
   {
     name: "Login",
@@ -53,66 +53,111 @@ const operations: operation[] = [
     method: "GET",
     fields: { username: "input" },
   },
-  {
-    name: "Get Posts (empty for all)",
-    endpoint: "/api/posts",
-    method: "GET",
-    fields: { author: "input" },
-  },
-  {
-    name: "Create Post",
-    endpoint: "/api/posts",
-    method: "POST",
-    fields: { content: "input" },
-  },
-  {
-    name: "Update Post",
-    endpoint: "/api/posts/:id",
-    method: "PATCH",
-    fields: { id: "input", update: { content: "input", options: { backgroundColor: "input" } } },
-  },
-  {
-    name: "Delete Post",
-    endpoint: "/api/posts/:id",
-    method: "DELETE",
-    fields: { id: "input" },
-  },
-  {
-    name: "Create Group",
-    endpoint: "/api/group/",
-    method: "POST",
-    fields: { content: "input" },
-  },
-  {
-    name: "Delete Group",
-    endpoint: "/api/group/:id",
-    method: "DELETE",
-    fields: { id: "input" },
-  },
-  {
-    name: "Update Group",
-    endpoint: "/api/group/:id",
-    method: "POST",
-    fields: { id: "input", update: { admin: "input" }},
-  },
-  {
-    name: "Create Comment",
-    endpoint: "/api/comment/",
-    method: "POST",
-    fields: { content: "input"},
-  },
-  {
-    name: "Remove Comment",
-    endpoint: "/api/comment/:id",
-    method: "DELETE",
-    fields: { id: "input"},
-  },
-  {
-    name: "Create Nested Comment",
-    endpoint: "/api/comment/",
-    method: "POST",
-    fields: { content: "input"},
-  },
+  // {
+  //   name: "Get Posts (empty for all)",
+  //   endpoint: "/api/posts",
+  //   method: "GET",
+  //   fields: { author: "input" },
+  // },
+  // {
+  //   name: "Create Post",
+  //   endpoint: "/api/posts",
+  //   method: "POST",
+  //   fields: { content: "input" },
+  // },
+  // {
+  //   name: "Update Post",
+  //   endpoint: "/api/posts/:id",
+  //   method: "PATCH",
+  //   fields: { id: "input", update: { content: "input", options: { backgroundColor: "input" } } },
+  // },
+  // {
+  //   name: "Delete Post",
+  //   endpoint: "/api/posts/:id",
+  //   method: "DELETE",
+  //   fields: { id: "input" },
+  // },
+
+  // {
+  //   name: "Create New Group",
+  //   endpoint: "/api/group",
+  //   method: "POST",
+  //   fields: { groupname: "input" },
+  // },
+  // {
+  //   name: "Join a Group",
+  //   endpoint: "/api/group/:id",
+  //   method: "PATCH",
+  //   fields: { id: "input" },
+  // },
+  // {
+  //   name: "Remove Yourself from a Group",
+  //   endpoint: "/api/group/:groupid",
+  //   method: "PATCH",
+  //   fields: { groupid: "input" },
+  // },
+  // {
+  //   name: "Remove a User from a Group",
+  //   endpoint: "/api/group/removeuser/:id",
+  //   method: "PATCH",
+  //   fields: { id: "input" },
+  // },
+  // {
+  //   name: "Remove a Group",
+  //   endpoint: "/api/group/:groupid",
+  //   method: "DELETE",
+  //   fields: { groupid: "input" },
+  // },
+  // {
+  //   name: "Change Admin Control",
+  //   endpoint: "/api/group/admin/:id/user/:newUser",
+  //   method: "PATCH",
+  //   fields: { id: "input", newuser: "input" }
+  // },
+  // {
+  //   name: "Change Group Name",
+  //   endpoint: "/api/group/admin/:id/name/:newname",
+  //   method: "PATCH",
+  //   fields: { id: "input", newname: "input"}
+  // },
+  // {
+  //   name: "Get All Groups",
+  //   endpoint: "/api/groups",
+  //   method: "GET",
+  //   fields: {},
+  // },
+  // {
+  //   name: "Get User Groups",
+  //   endpoint: "/api/group/",
+  //   method: "GET",
+  //   fields: {},
+  // },
+  // {
+  //   name: "Get User Admin Groups",
+  //   endpoint: "/api/groupadmin",
+  //   method: "GET",
+  //   fields: {},
+  // }
+  // {
+  //   name: "Create Comment",
+  //   endpoint: "/api/comment/",
+  //   method: "POST",
+  //   fields: { content: "input"},
+  // },
+  // {
+  //   name: "Remove Comment",
+  //   endpoint: "/api/comment/:id",
+  //   method: "DELETE",
+  //   fields: { id: "input"},
+  // },
+  // {
+  //   name: "Create Nested Comment",
+  //   endpoint: "/api/comment/",
+  //   method: "POST",
+  //   fields: { content: "input"},
+  // },
+
+  
 ];
 
 // Do not edit below here.
