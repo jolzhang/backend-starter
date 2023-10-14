@@ -139,7 +139,6 @@ class Routes {
     return await Friend.rejectRequest(fromId, user);
   }
 
-
   // Creating a new group
   @Router.post("/group")
   async newGroup(session: WebSessionDoc, groupname: string) {
@@ -161,18 +160,34 @@ class Routes {
   @Router.patch("group/leave/:name")
   async removeSelf(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
+    // remove all comments from user from group
+    const group = await Group.getGroupfromName(name);
+    const userComments = await Comment.getUserComments(group._id, user);
+    for (let i = 0; i < userComments.length; i ++) {
+      await Comment.removeComment(userComments[i], user)
+    }
     return await Group.removeSelf(user, name);
   }
   
   @Router.patch("group/name/:name/otheruser/:otheruse")
   async removeUser(session: WebSessionDoc, name: string, otheruser: ObjectId) {
     const user = WebSession.getUser(session);
+    const group = await Group.getGroupfromName(name);
+    const userComments = await Comment.getUserComments(group._id, user);
+    for (let i = 0; i < userComments.length; i ++) {
+      await Comment.removeComment(userComments[i], user);
+    }
     return await Group.removeOtherUser(user, otheruser, name);
   }
 
   @Router.delete("/group/:name")
   async deleteGroup(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
+    const group = await Group.getGroupfromName(name);
+    const allComments = await Comment.getComments(group._id);
+    for (let i = 0; i < allComments.length; i ++) {
+      await Comment.removeComment(allComments[i]._id, user);
+    }
     return await Group.removeGroup(user, name);
   }
 
@@ -304,22 +319,7 @@ class Routes {
     const user = WebSession.getUser(session);
     return await List.getUserLists(user);
   }
-
-  // Search Concept
-  // @Router.post("/search")
-  // async createSearch(session: WebSessionDoc, book: string) {
-  //   const books = await Book.getAllBooks();
-  //   const bookObject = (await Book.getBookfromTitle(book))._id;
-  //   if (bookObject) {
-  //     return await Search.newSearch(bookObject, books)
-  //   }
-  //   return new Error("Not Implemented Yet");
-  // }
-
-  // @Router.patch("/search")
-  // async recommend(session: WebSessionDoc, list: Set<ObjectId>) {
-  //   return new Error("Not Implemented Yet");
-  // }
+  
 }
 
 export default getExpressRouter(new Routes());

@@ -77,7 +77,6 @@ const operations: operation[] = [
   //   method: "DELETE",
   //   fields: { id: "input" },
   // },
-
   {
     name: "Create New Group",
     endpoint: "/api/group",

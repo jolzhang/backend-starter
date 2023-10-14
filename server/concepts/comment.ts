@@ -57,6 +57,7 @@ export default class CommentConcept {
         }
         throw new CommentAuthorError(user, _id);
     }
+
     async removeComment(_id: ObjectId, user: ObjectId) {
         await this.commentExists(_id);
         await this.isAuthor(_id, user);
@@ -76,6 +77,17 @@ export default class CommentConcept {
 
     async getComments(group: ObjectId) {
         return await this.comments.readMany({ groups: { $eq: group }});
+    }
+
+    async getUserComments(group: ObjectId, user: ObjectId) {
+        const lst = [];
+        const comm = await this.getComments(group);
+        for (let i = 0; i < comm.length; i ++) {
+            if (comm[i].author.equals(user)) {
+                lst.push(comm[i]._id);
+            }
+        }
+        return lst;
     }
 }
 
