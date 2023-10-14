@@ -78,66 +78,66 @@ const operations: operation[] = [
   //   fields: { id: "input" },
   // },
 
-  // {
-  //   name: "Create New Group",
-  //   endpoint: "/api/group",
-  //   method: "POST",
-  //   fields: { groupname: "input" },
-  // },
-  // {
-  //   name: "Join a Group",
-  //   endpoint: "/api/group/:id",
-  //   method: "PATCH",
-  //   fields: { id: "input" },
-  // },
-  // {
-  //   name: "Remove Yourself from a Group",
-  //   endpoint: "/api/group/:groupid",
-  //   method: "PATCH",
-  //   fields: { groupid: "input" },
-  // },
-  // {
-  //   name: "Remove a User from a Group",
-  //   endpoint: "/api/group/removeuser/:id",
-  //   method: "PATCH",
-  //   fields: { id: "input" },
-  // },
-  // {
-  //   name: "Remove a Group",
-  //   endpoint: "/api/group/:groupid",
-  //   method: "DELETE",
-  //   fields: { groupid: "input" },
-  // },
-  // {
-  //   name: "Change Admin Control",
-  //   endpoint: "/api/group/admin/:id/user/:newUser",
-  //   method: "PATCH",
-  //   fields: { id: "input", newuser: "input" }
-  // },
-  // {
-  //   name: "Change Group Name",
-  //   endpoint: "/api/group/admin/:id/name/:newname",
-  //   method: "PATCH",
-  //   fields: { id: "input", newname: "input"}
-  // },
-  // {
-  //   name: "Get All Groups",
-  //   endpoint: "/api/groups",
-  //   method: "GET",
-  //   fields: {},
-  // },
-  // {
-  //   name: "Get User Groups",
-  //   endpoint: "/api/group/",
-  //   method: "GET",
-  //   fields: {},
-  // },
-  // {
-  //   name: "Get User Admin Groups",
-  //   endpoint: "/api/groupadmin",
-  //   method: "GET",
-  //   fields: {},
-  // }
+  {
+    name: "Create New Group",
+    endpoint: "/api/group",
+    method: "POST",
+    fields: { groupname: "input" },
+  },
+  {
+    name: "Get Group ID",
+    endpoint: "/api/group/:name",
+    method: "GET",
+    fields: { name: "input" },
+  },
+  {
+    name: "Join a Group",
+    endpoint: "/api/group/join/:name",
+    method: "PATCH",
+    fields: { name: "input" },
+  },
+  {
+    name: "Leave a Group",
+    endpoint: "/api/group/leave/:name",
+    method: "PATCH",
+    fields: { name: "input" },
+  },
+  {
+    name: "Remove a User from a Group",
+    endpoint: "/api/group/name/:name/otheruser/:otheruse",
+    method: "PATCH",
+    fields: { name: "input", otheruser_ID: "input" },
+  },
+  {
+    name: "Remove a Group",
+    endpoint: "/api/group/:name",
+    method: "DELETE",
+    fields: { name: "input" },
+  },
+  {
+    name: "Change Admin Control",
+    endpoint: "/api/group/name/:name/user/:_newUser",
+    method: "PATCH",
+    fields: { id: "input", newuser: "input" }
+  },
+  {
+    name: "Change Group Name",
+    endpoint: "/api/group/name/:_name/newname/:_newname",
+    method: "PATCH",
+    fields: { id: "input", newname: "input"}
+  },
+  {
+    name: "Get All Groups",
+    endpoint: "/api/groups",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Get User Groups",
+    endpoint: "/api/group/",
+    method: "GET",
+    fields: {},
+  },
   // {
   //   name: "Create Comment",
   //   endpoint: "/api/comment/",
@@ -157,7 +157,7 @@ const operations: operation[] = [
   //   fields: { content: "input"},
   // },
 
-  
+
 ];
 
 // Do not edit below here.
