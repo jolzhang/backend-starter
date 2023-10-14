@@ -138,26 +138,96 @@ const operations: operation[] = [
     method: "GET",
     fields: {},
   },
-  // {
-  //   name: "Create Comment",
-  //   endpoint: "/api/comment/",
-  //   method: "POST",
-  //   fields: { content: "input"},
-  // },
-  // {
-  //   name: "Remove Comment",
-  //   endpoint: "/api/comment/:id",
-  //   method: "DELETE",
-  //   fields: { id: "input"},
-  // },
-  // {
-  //   name: "Create Nested Comment",
-  //   endpoint: "/api/comment/",
-  //   method: "POST",
-  //   fields: { content: "input"},
-  // },
-
-
+  {
+    name: "Create Comment",
+    endpoint: "/api/comment/",
+    method: "POST",
+    fields: { comment: "input", group: "input"},
+  },
+  {
+    name: "Remove Comment",
+    endpoint: "/api/comment/:id",
+    method: "DELETE",
+    fields: { id: "input"},
+  },
+  {
+    name: "Create Nested Comment",
+    endpoint: "/api/comment/parent/:_parent",
+    method: "POST",
+    fields: { content: "input", group: "input", parent: "input"},
+  },
+  {
+    name: "Get All Comments from Group",
+    endpoint: "/api/comment/group/:_group",
+    method: "GET",
+    fields: { group: "input" }
+  },
+  {
+    name: "Input New Book",
+    endpoint: "/api/book",
+    method: "POST",
+    fields: { title: "input", author: "input", summary: "input", review: "input"}
+  },
+  {
+    name: "Get All Books",
+    endpoint: "/api/book",
+    method: "GET",
+    fields: {}
+  },
+  {
+    name: "Add Group to Book!",
+    endpoint: "/api/book/add/:title/group/:chat",
+    method: "PATCH",
+    fields: { title: "input", chat: "input" },
+  },
+  {
+    name: "Remove Group from Book!",
+    endpoint: "/api/book/remove/:title/group/:chat",
+    method: "PATCH",
+    fields: { title: "input", chat: "input" },
+  },
+  {
+    name: "Search Up Book",
+    endpoint: "/api/book/title/:title",
+    method: "GET",
+    fields: { title: "input" },
+  },
+  {
+    name: "Get Book Recommendations",
+    endpoint: "/api/book/recommend/",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Create new Reading List",
+    endpoint: "/api/list",
+    method: "POST",
+    fields: { name: "input" }
+  },
+  {
+    name: "Add Book to Reading List",
+    endpoint: "/api/list/add/:book/",
+    method: "PATCH",
+    fields: { name: "input", book: "input" }
+  },
+  {
+    name: "Remove Book from Reading List",
+    endpoint: "/api/list/remove/:book",
+    method: "PATCH",
+    fields: { name: "input", book: "input" },
+  },
+  {
+    name: "Delete List",
+    endpoint: "/api/list",
+    method: "DELETE",
+    fields: { name: "input" },
+  },
+  {
+    name: "Get User Lists",
+    endpoint: "/api/list",
+    method: "GET",
+    fields: { },
+  }
 ];
 
 // Do not edit below here.

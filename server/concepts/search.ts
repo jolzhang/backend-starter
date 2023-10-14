@@ -10,8 +10,12 @@ export interface SearchDoc extends BaseDoc {
 export default class SearchConcept {
     public readonly search = new DocCollection<SearchDoc>("search");
 
-    async newSearch(user: ObjectId, book: ObjectId) {
-        return new Error("Not Implemented Yet");
+    async newSearch(book: ObjectId, library: Array<ObjectId>) {
+        for (let i = 0; i < library.length; i ++) {
+            if (library[i].equals(book)) {
+                return { msg: "Successfully found book", id: library[i]};
+            }
+        }
     }
 
     async recommend(user: ObjectId, list: Set<ObjectId>) {

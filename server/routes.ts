@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Comment, Friend, Group, Post, User, WebSession } from "./app";
+import { Book, Comment, Friend, Group, List, Post, User, WebSession } from "./app";
+import { NotAllowedError } from "./concepts/errors";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -206,68 +207,119 @@ class Routes {
     return await Group.getAllUserGroups(user);
   }
 
-  
   // Comment Concept
   @Router.post("/comment")
-  async createComment(session: WebSessionDoc, body: string, chat: ObjectId) {
+  async createComment(session: WebSessionDoc, comment: string, group: ObjectId) {
     const user = WebSession.getUser(session);
-    return await Comment.create(user, body, chat);;
+    return await Comment.create(user, comment, group);;
   }
 
   @Router.delete("/comment/:_id")
   async deleteComment(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    return await Comment.remove(_id);
+    return await Comment.removeComment(_id, user);
   }
 
-  @Router.post("/comment")
+  @Router.post("/comment/parent/:_parent")
   async replyComment(session: WebSessionDoc, body: string, parent: ObjectId, group: ObjectId) {
     const user = WebSession.getUser(session);
     return await Comment.reply(user, body, parent, group);
   }
 
-  // Search Concept
-  @Router.post("/search")
-  async createSearch(session: WebSessionDoc, book: ObjectId) {
-    return new Error("Not Implemented Yet");
-  }
-
-  @Router.patch("/search")
-  async recommend(session: WebSessionDoc, list: Set<ObjectId>) {
-    return new Error("Not Implemented Yet");
-  }
-
-  // List Concept
-  @Router.post("/list")
-  async createList(session: WebSessionDoc, name: string) {
-    return new Error("Not Implemented Yet");
-  }
-
-  @Router.patch("/list")
-  async addList(session: WebSessionDoc, name: string, b: ObjectId) {
-    return new Error("Not Implemented Yet");
-  }
-
-  @Router.delete("/list")
-  async removeList(session: WebSessionDoc, b: ObjectId) {
-    return new Error("Not Implemented Yet");
+  @Router.get("/comment/group/:_group")
+  async getComments(group: ObjectId) {
+    return await Comment.getComments(group);
   }
 
   // Book Concept
   @Router.post("/book")
-  async newBook(session: WebSessionDoc, title: string, author: ObjectId) {
-    return new Error("Not Implemented Yet");
+  async newBook(title: string, author: string, summary: string, review: Number) {
+    return await Book.newBook(title, author, summary, review);
   }
 
-  @Router.patch("/book")
-  async addGroup(session: WebSessionDoc, title: String, g: ObjectId) {
-    return new Error("Not Implemented Yet");
+  @Router.get("/book")
+  async getBooks() {
+    return await Book.getAllBooks();
+  }
+  
+  @Router.patch("/book/add/:title/group/:chat")
+  async addGroup(session: WebSessionDoc, title: string, chat: string) {
+    const user = WebSession.getUser(session);
+    const group = await Group.getGroupfromName(chat);
+    if (group.admin.equals(user)) {
+      return await Book.addGroup(title, group._id);
+    }
+    throw new NotAllowedError ("Not Allowed to Add Group!");
   }
 
-  @Router.patch("/book")
-  async removeGroup(session: WebSessionDoc, g: ObjectId) {
-    return new Error("Not Implemented Yet");
+  @Router.patch("/book/remove/:title/group/:chat")
+  async removeGroup(session: WebSessionDoc, title: string, chat: string) {
+    const user = WebSession.getUser(session);
+    const group = await Group.getGroupfromName(chat);
+    if (group.admin.equals(user)) {
+      return await Book.removeGroup(title, group._id);
+    }
+    throw new NotAllowedError ("Not Allowed to Remove Group!");
   }
+
+  @Router.get("/book/title/:title")
+  async getBook(title: string) {
+    return await Book.getBookfromTitle(title);
+  }
+
+  @Router.get("/book/recommend/")
+  async getRecommendations() {
+    return await Book.bookRecommend();
+  }
+  
+  // List Concept
+  @Router.post("/list")
+  async createList(session: WebSessionDoc, name: string) {
+    const user = WebSession.getUser(session);
+    return await List.newList(name, user);
+  }
+
+  @Router.patch("/list/add/:book/")
+  async addToList(session: WebSessionDoc, name: string, book: string) {
+    const user = WebSession.getUser(session);
+    const enter = (await Book.getBookfromTitle(book))._id;
+    return await List.addIn(name, user, enter);
+  }
+
+  @Router.patch("/list/remove/:book")
+  async removeList(session: WebSessionDoc, name: string, book: string) {
+    const user = WebSession.getUser(session);
+    const enter = (await Book.getBookfromTitle(book))._id;
+    return await List.removeFrom(name, user, enter);
+  }
+
+  @Router.delete("/list")
+  async deleteList(session: WebSessionDoc, name: string) {
+    const user = WebSession.getUser(session);
+    return await List.deleteList(name, user);
+  }
+
+  @Router.get("/list")
+  async getUserLists(session: WebSessionDoc) {
+    const user = WebSession.getUser(session);
+    return await List.getUserLists(user);
+  }
+
+  // Search Concept
+  // @Router.post("/search")
+  // async createSearch(session: WebSessionDoc, book: string) {
+  //   const books = await Book.getAllBooks();
+  //   const bookObject = (await Book.getBookfromTitle(book))._id;
+  //   if (bookObject) {
+  //     return await Search.newSearch(bookObject, books)
+  //   }
+  //   return new Error("Not Implemented Yet");
+  // }
+
+  // @Router.patch("/search")
+  // async recommend(session: WebSessionDoc, list: Set<ObjectId>) {
+  //   return new Error("Not Implemented Yet");
+  // }
 }
 
 export default getExpressRouter(new Routes());
