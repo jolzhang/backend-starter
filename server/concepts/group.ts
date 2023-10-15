@@ -29,8 +29,9 @@ export default class GroupConcept {
 
     async newGroup(admin: ObjectId, groupname: string) {
         const members = new Array<ObjectId>(admin);
+        const comments = new Array<ObjectId>;
         await this.canCreate(groupname);
-        const _id = await this.groups.createOne( { admin, groupname, members });
+        const _id = await this.groups.createOne( { admin, groupname, members, comments });
         return { msg: "Successfully created a new group!", id: await this.groups.readOne({ _id })};
     }
     
@@ -41,7 +42,7 @@ export default class GroupConcept {
         }
         throw new NotFoundError("Group Not Found from Name!");
     }
-
+    
     // Helper function that checks if User is in group already
     private async checkInGroup(group: GroupDoc, user: ObjectId) {
         return group.members.some((temp) => temp.equals(user));
@@ -61,18 +62,38 @@ export default class GroupConcept {
         throw new CouldNotAddUserError;
     }
 
+    // Helper function that removes a member from a group given the user and members array
+    private async removeMember(members: Array<ObjectId>, user: ObjectId) {
+        const lst = [];
+        for (let i = 0; i < members.length; i ++) {
+            if (!(members[i].equals(user))) {
+                lst.push(user);
+            }
+        }
+        return lst;
+    }
+
     async removeSelf(user: ObjectId, name: string) {
         const group = await this.getGroupfromName(name);
         const inGroup = await this.checkInGroup(group, user);
+        const isAdmin = await this.isAdmin(user, group);
         if (inGroup && group) {
-            group.members.filter((u) => u !== user);
-            await this.groups.updateOne({_id: group._id}, { ...group, members: group.members })
-            return { msg: "Successfully removed yourself from group!", id: group };
+            if (isAdmin && (group.members.length == 1)) {
+                return await this.removeGroup(user, name);
+            }
+            else if (isAdmin && (group.members.length > 1)) {
+                return { msg: "User is admin, cannot remove self from group!"};
+            }
+            else {
+                group.members = await this.removeMember(group.members, user);
+                await this.groups.updateOne({_id: group._id}, { ...group, members: group.members });
+                return { msg: "Successfully removed yourself from group!", id: group };
+            }
         }
         throw new CouldNotRemoveUserError;
     }
 
-    private async isAdmin(user: ObjectId, group: GroupDoc) {
+    async isAdmin(user: ObjectId, group: GroupDoc) {
         if (group.admin.equals(user)) {
             return true;
         }
@@ -85,9 +106,9 @@ export default class GroupConcept {
         const otherUserIn = await this.checkInGroup(group, otherUser);
         const isAdmin = await this.isAdmin(user, group);
         if (group && userIn && otherUserIn && isAdmin) {
-            group.members.filter((u) => u !== otherUser)
+            group.members = await this.removeMember(group.members, otherUser);
             await this.groups.updateOne({_id: group._id}, { ...group, members: group.members });
-            return { msg: "Successfully removed user from group!", id: group };
+            return { msg: "Successfully removed user from group!" };
         }
         throw new CouldNotRemoveUserError;
     }
@@ -127,12 +148,32 @@ export default class GroupConcept {
 
     async addComment(name: string, comment: ObjectId) {
         const group = await this.getGroupfromName(name);
+        const comments = group.comments;
         if (group) {
-            group.comments.push(comment);
-            await this.groups.updateOne({_id: group._id}, { ...group, comments: group.comments });
+            comments.push(comment);
+            await this.groups.updateOne({_id: group._id}, { ...group, comments: comments });
             return { msg: "Succesfully added comment to group", id: group };
         }
         throw new CouldNotAddComment;
+    }
+
+    private async removeComment(comments: Array<ObjectId>, comment: ObjectId) {
+        const lst = [];
+        for (let i = 0; i < comments.length; i ++) {
+            if (!(comments[i].equals(comment))) {
+                lst.push(comments[i]);
+            }
+        }
+        return lst;
+    }
+
+    async deleteComment(id: ObjectId, comment: ObjectId) {
+        const group = await this.groups.readOne( {_id: id} );
+        if (group) {
+            group.comments = await this.removeComment(group.comments, comment);
+            await this.groups.updateOne({_id: group._id}, { ...group, comments: group.comments });
+            return { msg: "Successfully removed comment from group", id: group };
+        }
     }
 
     async getAllGroups() {
@@ -142,6 +183,7 @@ export default class GroupConcept {
     async getAllUserGroups(user: ObjectId) {
         return await this.groups.readMany({ members: { $elemMatch: { $eq: user } }});
     }
+    
 }
 
 export class CouldNotAddUserError extends NotAllowedError {

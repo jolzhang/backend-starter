@@ -42,7 +42,10 @@ class Routes {
   async deleteUser(session: WebSessionDoc) {
     const user = WebSession.getUser(session);
     WebSession.end(session);
-    // const groups = await Group.getAllGroups();
+    const groups = await Group.getAllUserGroups(user);
+    for (let i = 0; i < groups.length; i ++) {
+      await Group.removeSelf(user, groups[i].groupname);
+    }
     return await User.delete(user);
   }
 
@@ -140,47 +143,51 @@ class Routes {
   }
 
   // Creating a new group
-  @Router.post("/group")
+  @Router.post("/groups")
   async newGroup(session: WebSessionDoc, groupname: string) {
     const user = WebSession.getUser(session);
     return await Group.newGroup(user, groupname);
   }
 
-  @Router.get("/group/:name")
+  @Router.get("/groups/name/:name")
   async getGroup(name: string) {
     return await Group.getGroupfromName(name);
   }
   
-  @Router.patch("/group/join/:name")
+  @Router.post("/groups/name/:name")
   async joinGroup(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
     return await Group.joinGroup(user, name);
   }
 
-  @Router.patch("group/leave/:name")
+  @Router.patch("/groups")
   async removeSelf(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
     // remove all comments from user from group
     const group = await Group.getGroupfromName(name);
-    const userComments = await Comment.getUserComments(group._id, user);
+    const userComments = await Comment.getUserCommentsfromGroup(group._id, user);
     for (let i = 0; i < userComments.length; i ++) {
       await Comment.removeComment(userComments[i], user)
     }
     return await Group.removeSelf(user, name);
   }
   
-  @Router.patch("group/name/:name/otheruser/:otheruse")
-  async removeUser(session: WebSessionDoc, name: string, otheruser: ObjectId) {
+  @Router.patch("/groups/remove")
+  async removeUser(session: WebSessionDoc, name: string, otheruser: string) {
     const user = WebSession.getUser(session);
+    const other = await User.getUserByUsername(otheruser);
     const group = await Group.getGroupfromName(name);
-    const userComments = await Comment.getUserComments(group._id, user);
-    for (let i = 0; i < userComments.length; i ++) {
-      await Comment.removeComment(userComments[i], user);
+    const isAdmin = await Group.isAdmin(user, group);
+    const userComments = await Comment.getUserCommentsfromGroup(group._id, user);
+    if (isAdmin) {
+      for (let i = 0; i < userComments.length; i ++) {
+        await Comment.removeComment(userComments[i], user);
+      }
     }
-    return await Group.removeOtherUser(user, otheruser, name);
+    return await Group.removeOtherUser(user, other._id, name);
   }
 
-  @Router.delete("/group/:name")
+  @Router.delete("/groups")
   async deleteGroup(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
     const group = await Group.getGroupfromName(name);
@@ -191,24 +198,17 @@ class Routes {
     return await Group.removeGroup(user, name);
   }
 
-  @Router.patch("/group/name/:name/user/:_newUser")
-  async updateAdmin(session: WebSessionDoc, name: string, newUser: ObjectId) {
+  @Router.patch("/groups/admin")
+  async updateAdmin(session: WebSessionDoc, name: string, newuser: string) {
     const user = WebSession.getUser(session);
-    return await Group.changeAdmin(user, newUser, name);
+    const other = await User.getUserByUsername(newuser);
+    return await Group.changeAdmin(user, other._id, name);
   }
 
-  @Router.patch("group/name/:_name/newname/:_newname")
+  @Router.patch("/groups/group")
   async updateName(session: WebSessionDoc, name: string, newname: string) {
     const user = WebSession.getUser(session);
     return await Group.changeName(user, name, newname);
-  }
-
-  @Router.post("groups/name/:_name/comment/:_comment")
-  async addComment(session: WebSessionDoc, name: string, content: string) {
-    const user = WebSession.getUser(session);
-    const group = await Group.getGroupfromName(name);
-    const comment = await Comment.create(user, content, group._id);
-    // return await Group.addComment(name, comment.id);
   }
 
   @Router.get("/groups")
@@ -216,34 +216,56 @@ class Routes {
     return await Group.getAllGroups();
   }
 
-  @Router.get("/group/session:_session")
+  @Router.get("/groups/:session")
   async getUserGroups(session: WebSessionDoc) {
     const user = WebSession.getUser(session);
     return await Group.getAllUserGroups(user);
   }
 
   // Comment Concept
-  @Router.post("/comment")
-  async createComment(session: WebSessionDoc, comment: string, group: ObjectId) {
+  @Router.post("/comments")
+  async createComment(session: WebSessionDoc, body: string, group: string) {
     const user = WebSession.getUser(session);
-    return await Comment.create(user, comment, group);;
+    const group_obj = await Group.getGroupfromName(group);
+    const comment = (await Comment.create(user, body, group_obj._id));
+    if (comment.comment) {
+      await Group.addComment(group, comment.comment._id);
+    }
+    return comment;
   }
 
-  @Router.delete("/comment/:_id")
-  async deleteComment(session: WebSessionDoc, _id: ObjectId) {
+  @Router.delete("/comments")
+  async deleteComment(session: WebSessionDoc, id: ObjectId) {
     const user = WebSession.getUser(session);
-    return await Comment.removeComment(_id, user);
+    const allChildren = await Comment.getAllChildren(id);
+    const group_obj = await Comment.getGroup(id);
+    for (let i = 0; i < allChildren.length; i ++) {
+      await Group.deleteComment(group_obj, allChildren[i]);
+    }
+    return await Comment.removeComment(id, user);
   }
 
-  @Router.post("/comment/parent/:_parent")
-  async replyComment(session: WebSessionDoc, body: string, parent: ObjectId, group: ObjectId) {
+  @Router.post("/comments/reply")
+  async replyComment(session: WebSessionDoc, body: string, parent: ObjectId, group: string) {
     const user = WebSession.getUser(session);
-    return await Comment.reply(user, body, parent, group);
+    const group_obj = await Group.getGroupfromName(group);
+    const comment = await Comment.reply(user, body, parent, group_obj._id);
+    if (comment.comment) {
+      await Group.addComment(group, comment.comment._id);
+    }
+    return comment;
   }
 
-  @Router.get("/comment/group/:_group")
-  async getComments(group: ObjectId) {
-    return await Comment.getComments(group);
+  @Router.get("/comments")
+  async getComments(group: string) {
+    const group_obj = await Group.getGroupfromName(group);
+    return await Comment.getComments(group_obj._id);
+  }
+
+  @Router.get("/comments/user")
+  async getUserComments(session: WebSessionDoc) {
+    const user = WebSession.getUser(session);
+    return await Comment.getUserComments(user);
   }
 
   // Book Concept
@@ -261,17 +283,19 @@ class Routes {
   async addGroup(session: WebSessionDoc, title: string, chat: string) {
     const user = WebSession.getUser(session);
     const group = await Group.getGroupfromName(chat);
-    if (group.admin.equals(user)) {
+    const isAdmin = await Group.isAdmin(user, group);
+    if (group && isAdmin) {
       return await Book.addGroup(title, group._id);
     }
-    throw new NotAllowedError ("Not Allowed to Add Group!");
+    throw new NotAllowedError("Could Not Successfully Add Group");
   }
 
   @Router.patch("/book/remove/:title/group/:chat")
   async removeGroup(session: WebSessionDoc, title: string, chat: string) {
     const user = WebSession.getUser(session);
     const group = await Group.getGroupfromName(chat);
-    if (group.admin.equals(user)) {
+    const isAdmin = await Group.isAdmin(user, group);
+    if (group && isAdmin) {
       return await Book.removeGroup(title, group._id);
     }
     throw new NotAllowedError ("Not Allowed to Remove Group!");

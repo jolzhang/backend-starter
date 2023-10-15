@@ -26,7 +26,7 @@ export default class CommentConcept {
         return { msg: "Comment successfully created!", comment: await this.comments.readOne({ _id })};
     }
 
-    private async commentExists(_id: ObjectId) {
+    async commentExists(_id: ObjectId) {
         const comment = await this.comments.readOne({ _id });
         if (!comment) {
             throw new NotFoundError(`Comment ${_id} does not exist`);
@@ -34,19 +34,33 @@ export default class CommentConcept {
         return comment
     }
 
-    private async getAllChildren(_id: ObjectId) {
-        await this.commentExists(_id);
-        const queue = [_id];
-        const sol = [];
-        while (queue.length > 0) {
-            let popped = queue.pop();
-            const allComments = await this.comments.readMany( {parent: {$eq: popped }});
-            for (let i = 0; i < allComments.length; i ++ ) {
-                queue.push(allComments[i]._id);
-                sol.push(allComments[i]._id);
+    private async directChild(id: ObjectId) {
+        const allComments = await this.comments.readMany({});
+        const child = [];
+        for (let i = 0; i < allComments.length; i ++) {
+            const comment = allComments[i];
+            if (comment && comment.parent && id == comment.parent) {
+                child.push(comment);
             }
         }
-        return sol;
+        return child;
+    }
+
+    async getAllChildren(id: ObjectId) {
+        await this.commentExists(id);
+        const queue = [id];
+        const lst = [id];
+        while (queue.length > 0) {
+            let popped = queue.pop();
+            if (popped) {
+                const directChildren = await this.directChild(popped);
+                for (let i = 0; i < directChildren.length; i ++ ) {
+                    queue.push(directChildren[i]._id);
+                    lst.push(directChildren[i]._id);
+                }
+            }
+        }
+        return lst;
     }
 
     private async isAuthor(_id: ObjectId, user: ObjectId) {
@@ -58,14 +72,20 @@ export default class CommentConcept {
         throw new CommentAuthorError(user, _id);
     }
 
+    async getGroup(_id: ObjectId) {
+        await this.commentExists(_id);
+        const comment = await this.commentExists(_id);
+        return comment.group;
+    }
+    
     async removeComment(_id: ObjectId, user: ObjectId) {
         await this.commentExists(_id);
         await this.isAuthor(_id, user);
-        const allChildren = await this.getAllChildren(_id);
+        const allChildren = await this.getAllChildren(_id); // a list of comments and all their children
         for (let i = 0; i < allChildren.length; i ++) {
-            this.comments.deleteOne(allChildren[i]);
+            this.comments.deleteOne( {_id: allChildren[i]});
         }
-        return { msg: "Comment successfully deleted!" };
+        return { msg: "Comment and Children Comments successfully deleted!" };
     }
 
     async reply(author: ObjectId, body: string, parent: ObjectId, group: ObjectId) {
@@ -76,13 +96,24 @@ export default class CommentConcept {
     }
 
     async getComments(group: ObjectId) {
-        return await this.comments.readMany({ groups: { $eq: group }});
+        return await this.comments.readMany({ group: { $eq: group }});
     }
 
-    async getUserComments(group: ObjectId, user: ObjectId) {
+    async getUserCommentsfromGroup(group: ObjectId, user: ObjectId) {
         const lst = [];
         const comm = await this.getComments(group);
-        for (let i = 0; i < comm.length; i ++) {
+        for (let i = 0; i < comm.length; i++) {
+            if (comm[i].author.equals(user)) {
+                lst.push(comm[i]._id);
+            }
+        }
+        return lst;
+    }
+
+    async getUserComments(user: ObjectId) {
+        const lst = [];
+        const comm = await this.comments.readMany({});
+        for (let i = 0; i < comm.length; i++) {
             if (comm[i].author.equals(user)) {
                 lst.push(comm[i]._id);
             }
@@ -96,5 +127,11 @@ export class CommentAuthorError extends NotAllowedError {
       public readonly author: ObjectId,
       public readonly _id: ObjectId,) {
       super("{0} is not the author of comment {1}!", author, _id);
+    }
+}
+
+export class CouldNotRemoveComment extends NotAllowedError {
+    constructor() {
+    super("Could not successfully remove comment");
     }
 }

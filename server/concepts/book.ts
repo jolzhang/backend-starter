@@ -51,11 +51,20 @@ export default class BookConcept {
         throw new CouldNotAddGroup;
     }
 
+    private async removeG(groups: Array<ObjectId>, group: ObjectId) {
+        const lst = [];
+        for (let i = 0; i < groups.length; i ++) {
+            if (!(groups[i].equals(group))) {
+                lst.push(groups[i]);
+            }
+        }
+        return lst;
+    }
     async removeGroup(title: string, group: ObjectId) {
         await this.getBookfromTitle(title);
         const book = await this.getBookfromTitle(title);
         if (await this.groupInBook(title, group)) {
-            book.groups.filter((g) => !(g.equals(group)));
+            book.groups = await this.removeG(book.groups, group);
             await this.books.updateOne({ _id: book._id}, { ...book, groups: book.groups});
             return { msg: "Successfully removed group from book", id: book };
         }
@@ -67,11 +76,13 @@ export default class BookConcept {
     }
 
     async bookRecommend() {
-        const lst = new Set<string>();
+        const lst = new Array<string>();
         const allBooks = await this.getAllBooks();
-        while (lst.size < 10) {
-            let rand = Math.random() * ((allBooks.length - 1) - 0) + 0;
-            lst.add(allBooks[rand].title);
+        const minNum = 0;
+        const maxNum = allBooks.length - 1;
+        while (lst.length < 5) {
+            let rand = Math.floor(Math.random() * (maxNum - minNum)) + minNum;
+            lst.push(allBooks[rand].title);
         }
         return lst;
     }

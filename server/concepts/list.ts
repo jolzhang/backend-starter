@@ -66,13 +66,23 @@ export default class ListConcept {
         throw new CouldNotAddBook;
     }
 
+    async removeBook(list: Array<ObjectId>, book: ObjectId) {
+        const lst = [];
+        for (let i = 0; i < list.length; i ++) {
+            if (!(list[i].equals(book))) {
+                lst.push(list[i])
+            }
+        }
+        return lst;
+    }
+    
     async removeFrom(name: string, admin: ObjectId, book: ObjectId) {
         await this.getListfromName(name);
         const list = await this.getListfromName(name);
         const isAdmin = await this.isAdmin(admin, list);
         const inList = await this.inList(book, list);
         if (isAdmin && inList && list) {
-            list.books.filter((b) => b !== book);
+            list.books = await this.removeBook(list.books, book);
             this.lists.updateOne({_id: list._id}, {...list, books: list.books});
             return { msg: "Successfully removed book from list", id: list }
         }
