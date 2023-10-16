@@ -8,13 +8,13 @@ export interface BookDoc extends BaseDoc {
     author: string;
     summary: string;
     groups: Array<ObjectId>;
-    review: Number;
+    review: string;
 }
 
 export default class BookConcept {
     public readonly books = new DocCollection<BookDoc>("books");
 
-    async newBook(title: string, author: string, summary: string, review: Number) {
+    async newBook(title: string, author: string, summary: string, review: string) {
         const groups = Array<ObjectId>();
         const _id = await this.books.createOne( {title, author, summary, groups, review} );
         return { msg: "New Book created!", book: await this.books.readOne({ _id })};

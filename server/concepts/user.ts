@@ -5,6 +5,7 @@ import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
 export interface UserDoc extends BaseDoc {
   username: string;
   password: string;
+  email: string;
 }
 
 export default class UserConcept {
@@ -12,7 +13,7 @@ export default class UserConcept {
 
   async create(username: string, password: string, email: string) {
     await this.canCreate(username, password, email);
-    const _id = await this.users.createOne({ username, password });
+    const _id = await this.users.createOne({ username, password, email });
     return { msg: "User created successfully!", user: await this.users.readOne({ _id }) };
   }
 

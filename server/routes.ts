@@ -42,9 +42,15 @@ class Routes {
   async deleteUser(session: WebSessionDoc) {
     const user = WebSession.getUser(session);
     WebSession.end(session);
+    // Remove User from All Groups 
     const groups = await Group.getAllUserGroups(user);
     for (let i = 0; i < groups.length; i ++) {
       await Group.removeSelf(user, groups[i].groupname);
+    }
+    // Delete all lists created by User
+    const lists = await List.getUserLists(user);
+    for (let i = 0; i < lists.length; i ++) {
+      await List.deleteList(lists[i].listname, user);
     }
     return await User.delete(user);
   }
@@ -163,7 +169,7 @@ class Routes {
   @Router.patch("/groups")
   async removeSelf(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
-    // remove all comments from user from group
+    // Remove all Comments from User in Group
     const group = await Group.getGroupfromName(name);
     const userComments = await Comment.getUserCommentsfromGroup(group._id, user);
     for (let i = 0; i < userComments.length; i ++) {
@@ -177,12 +183,10 @@ class Routes {
     const user = WebSession.getUser(session);
     const other = await User.getUserByUsername(otheruser);
     const group = await Group.getGroupfromName(name);
-    const isAdmin = await Group.isAdmin(user, group);
-    const userComments = await Comment.getUserCommentsfromGroup(group._id, user);
-    if (isAdmin) {
-      for (let i = 0; i < userComments.length; i ++) {
-        await Comment.removeComment(userComments[i], user);
-      }
+    // Remove all Comments from Other User in Group
+    const userComments = await Comment.getUserCommentsfromGroup(group._id, other._id);
+    for (let i = 0; i < userComments.length; i ++) {
+      await Comment.removeComment(userComments[i], user);
     }
     return await Group.removeOtherUser(user, other._id, name);
   }
@@ -191,6 +195,7 @@ class Routes {
   async deleteGroup(session: WebSessionDoc, name: string) {
     const user = WebSession.getUser(session);
     const group = await Group.getGroupfromName(name);
+    // Remove all Comments from Group
     const allComments = await Comment.getComments(group._id);
     for (let i = 0; i < allComments.length; i ++) {
       await Comment.removeComment(allComments[i]._id, user);
@@ -228,6 +233,7 @@ class Routes {
     const user = WebSession.getUser(session);
     const group_obj = await Group.getGroupfromName(group);
     const comment = (await Comment.create(user, body, group_obj._id));
+    // Add Comment to Group 
     if (comment.comment) {
       await Group.addComment(group, comment.comment._id);
     }
@@ -239,6 +245,7 @@ class Routes {
     const user = WebSession.getUser(session);
     const allChildren = await Comment.getAllChildren(id);
     const group_obj = await Comment.getGroup(id);
+    // Remove Comment from Group
     for (let i = 0; i < allChildren.length; i ++) {
       await Group.deleteComment(group_obj, allChildren[i]);
     }
@@ -250,6 +257,7 @@ class Routes {
     const user = WebSession.getUser(session);
     const group_obj = await Group.getGroupfromName(group);
     const comment = await Comment.reply(user, body, parent, group_obj._id);
+    // Add Comment to Group
     if (comment.comment) {
       await Group.addComment(group, comment.comment._id);
     }
@@ -270,7 +278,7 @@ class Routes {
 
   // Book Concept
   @Router.post("/book")
-  async newBook(title: string, author: string, summary: string, review: Number) {
+  async newBook(title: string, author: string, summary: string, review: string) {
     return await Book.newBook(title, author, summary, review);
   }
 
@@ -284,6 +292,7 @@ class Routes {
     const user = WebSession.getUser(session);
     const group = await Group.getGroupfromName(chat);
     const isAdmin = await Group.isAdmin(user, group);
+    // Add Group to Book only if User is admin of Group
     if (group && isAdmin) {
       return await Book.addGroup(title, group._id);
     }
@@ -295,6 +304,7 @@ class Routes {
     const user = WebSession.getUser(session);
     const group = await Group.getGroupfromName(chat);
     const isAdmin = await Group.isAdmin(user, group);
+    // Remove Group from Book only if User is admin of Group
     if (group && isAdmin) {
       return await Book.removeGroup(title, group._id);
     }

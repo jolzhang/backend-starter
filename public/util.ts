@@ -11,6 +11,7 @@ type operation = {
 };
 
 const operations: operation[] = [
+  // User and WebSession Concept
   {
     name: "Get Session User (logged in user)",
     endpoint: "/api/session",
@@ -53,30 +54,50 @@ const operations: operation[] = [
     method: "GET",
     fields: { username: "input" },
   },
-  // {
-  //   name: "Get Posts (empty for all)",
-  //   endpoint: "/api/posts",
-  //   method: "GET",
-  //   fields: { author: "input" },
-  // },
-  // {
-  //   name: "Create Post",
-  //   endpoint: "/api/posts",
-  //   method: "POST",
-  //   fields: { content: "input" },
-  // },
-  // {
-  //   name: "Update Post",
-  //   endpoint: "/api/posts/:id",
-  //   method: "PATCH",
-  //   fields: { id: "input", update: { content: "input", options: { backgroundColor: "input" } } },
-  // },
-  // {
-  //   name: "Delete Post",
-  //   endpoint: "/api/posts/:id",
-  //   method: "DELETE",
-  //   fields: { id: "input" },
-  // },
+
+  // Friend Concept
+  {
+    name: "Get User's Friends",
+    endpoint: "/api/friends",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Remove Friend",
+    endpoint: "/api/friends/:friend",
+    method: "DELETE",
+    fields: { friend: "input" },
+  },
+  {
+    name: "Request Friend",
+    endpoint: "/api/friend/requests/:to",
+    method: "POST",
+    fields: { to: "input" },
+  },
+  {
+    name: "Get Friend Requests",
+    endpoint: "/api/friend/requests",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Remove Friend Request",
+    endpoint: "/api/friend/requests/:to",
+    method: "DELETE",
+    fields: { to: "input" },
+  },
+  {
+    name: "Accept Friend Request",
+    endpoint: "/api/friend/accept/:from",
+    method: "PUT",
+    fields: { from: "input" },
+  },
+  {
+    name: "Reject Friend Request",
+    endpoint: "/api/friend/reject/:from",
+    method:"PUT",
+    fields: { from: "input" },
+  },
 
   // Group Concept
   {
@@ -139,6 +160,7 @@ const operations: operation[] = [
     method: "GET",
     fields: {},
   },
+
   // Comment Concept
   {
     name: "Create Comment",
@@ -170,6 +192,8 @@ const operations: operation[] = [
     method: "GET",
     fields: {},
   },
+
+  // Book Concept
   {
     name: "Input New Book",
     endpoint: "/api/book",
@@ -206,6 +230,8 @@ const operations: operation[] = [
     method: "GET",
     fields: {},
   },
+  
+  // List Concept
   {
     name: "Create new Reading List",
     endpoint: "/api/list",
